@@ -211,7 +211,16 @@ function render() {
     });
 
     let html = '';
-    for (const [key, items] of Object.entries(groups)) {
+    const now = Date.now();
+    const todayKey = getGroupKey(now);
+    const sorted = Object.entries(groups).sort((a, b) => {
+        if (a[0] === todayKey) return -1;
+        if (b[0] === todayKey) return 1;
+        if (a[0] === '无截止日期') return 1;
+        if (b[0] === '无截止日期') return -1;
+        return a[0].localeCompare(b[0]);
+    });
+    for (const [key, items] of sorted) {
         html += `<div class="group-header">${formatGroupLabel(key)} <span class="count">${items.length}</span></div>`;
         html += `<ul class="task-list">${items.map(renderTaskHTML).join('')}</ul>`;
     }
