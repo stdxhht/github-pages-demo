@@ -135,12 +135,16 @@ function formatDueDate(dateStr) {
     return `<span class="task-due ${diff < 0 ? 'overdue' : ''}">${label} ${hh}:${mm}</span>`;
 }
 
+function isOverdue(t) {
+    return !t.done && t.dueDate && new Date(t.dueDate) < new Date();
+}
+
 function renderTaskHTML(t) {
     const time = new Date(t.createdAt);
     const timeStr = `${String(time.getHours()).padStart(2,'0')}:${String(time.getMinutes()).padStart(2,'0')}`;
     const p = t.priority || 'not-urgent-not-important';
     return `
-        <li class="task-item ${p}">
+        <li class="task-item ${p} ${isOverdue(t) ? 'overdue' : ''}">
             <div class="task-item-content">
                 <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id}, event)">
                 <span class="priority-dot ${p}"></span>
@@ -148,6 +152,7 @@ function renderTaskHTML(t) {
                 <button class="delete-btn" onclick="deleteTask(${t.id}, event)">&times;</button>
             </div>
             <div class="task-meta">
+                ${isOverdue(t) ? '<span class="overdue-badge">已过期</span>' : ''}
                 ${formatDueDate(t.dueDate)}
                 <span class="task-badge ${p}">${PRIORITY_LABELS[p]}</span>
                 <span class="task-time">${timeStr}</span>
