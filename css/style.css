@@ -473,19 +473,11 @@ body {
     padding-left: 32px;
     flex-wrap: wrap;
 }
-.overdue-badge {
-    font-size: 0.65em; padding: 2px 8px; border-radius: 6px;
-    font-weight: 800; white-space: nowrap;
-    background: rgba(239,68,68,0.2); color: #fca5a5;
-    border: 1px solid rgba(239,68,68,0.3);
-    animation: overduePulse 2s ease-in-out infinite;
-}
-@keyframes overduePulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-}
-.task-item.overdue .task-item-content {
-    position: relative;
+.overdue-label {
+    font-size: 0.7em; font-weight: 700;
+    color: #f87171;
+    margin-left: 4px;
+    white-space: nowrap;
 }
 .task-item.overdue .task-text { color: #fca5a5; }
 .task-item.overdue .task-text.done { color: #334155; opacity: 0.7; }
@@ -597,8 +589,8 @@ body {
     .task-item { padding: 10px 12px; gap: 6px; }
     .task-item-content { gap: 8px; }
     .task-meta { padding-left: 30px; gap: 6px; }
-    .overdue-badge { font-size: 0.6em; padding: 1px 6px; }
     .task-text { font-size: 0.88em; }
+    .overdue-label { font-size: 0.65em; }
     .task-badge { font-size: 0.6em; padding: 1px 6px; }
     .task-due { font-size: 0.62em; padding: 1px 6px; }
     .task-time { font-size: 0.65em; }

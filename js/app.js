@@ -148,11 +148,10 @@ function renderTaskHTML(t) {
             <div class="task-item-content">
                 <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTask(${t.id}, event)">
                 <span class="priority-dot ${p}"></span>
-                <span class="task-text ${t.done ? 'done' : ''}">${t.text}</span>
+                <span class="task-text ${t.done ? 'done' : ''}">${t.text}${isOverdue(t) ? '<span class="overdue-label">（已过期）</span>' : ''}</span>
                 <button class="delete-btn" onclick="deleteTask(${t.id}, event)">&times;</button>
             </div>
             <div class="task-meta">
-                ${isOverdue(t) ? '<span class="overdue-badge">已过期</span>' : ''}
                 ${formatDueDate(t.dueDate)}
                 <span class="task-badge ${p}">${PRIORITY_LABELS[p]}</span>
                 <span class="task-time">${timeStr}</span>
