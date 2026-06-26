@@ -199,7 +199,13 @@ function render() {
 
     const groups = {};
     filtered.forEach(t => {
-        const key = getGroupKey(t.createdAt);
+        let key;
+        if (t.dueDate) {
+            const ts = new Date(t.dueDate).getTime();
+            key = getGroupKey(ts);
+        } else {
+            key = '无截止日期';
+        }
         if (!groups[key]) groups[key] = [];
         groups[key].push(t);
     });
