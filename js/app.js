@@ -8,7 +8,7 @@ const PRIORITY_ORDER = ['urgent-important','not-urgent-important','urgent-not-im
 
 // Supabase 配置
 const SUPABASE_URL = 'https://uzkxpuynexoxxbrqkxbb.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_0treHlDbTSrWQMhoyYzzYQ_83H-0_Gb';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV6a3hwdXluZXhveHhicnFreGJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0NTExMjYsImV4cCI6MjA5ODAyNzEyNn0.-NCJlKuueycTgJf-7yvUP7BrAOF2PNo9dgCWJldg7yM';
 const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let tasks = [];
