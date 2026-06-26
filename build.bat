@@ -1,6 +1,8 @@
 pip install pyinstaller
 
 pyinstaller --noconfirm --onefile --windowed ^
-    --add-data "web;web" ^
+    --add-data "index.html;." ^
+    --add-data "css;css" ^
+    --add-data "js;js" ^
     --name "MyApp" ^
     main.py

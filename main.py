@@ -10,12 +10,12 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 
 
 def get_web_path():
-    """获取 web 目录的绝对路径，兼容 PyInstaller 打包"""
+    """获取项目根目录的绝对路径，兼容 PyInstaller 打包"""
     if getattr(sys, 'frozen', False):
         base = sys._MEIPASS
     else:
         base = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(base, 'web')
+    return base
 
 
 class MainWindow(QMainWindow):
