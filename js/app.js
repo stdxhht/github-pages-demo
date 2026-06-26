@@ -6,14 +6,70 @@ const PRIORITY_LABELS = {
 };
 const PRIORITY_ORDER = ['urgent-important','not-urgent-important','urgent-not-important','not-urgent-not-important'];
 
-let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+// Supabase 配置
+const SUPABASE_URL = 'https://uzkxpuynexoxxbrqkxbb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_0treHlDbTSrWQMhoyYzzYQ_83H-0_Gb';
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+let tasks = [];
 let filter = 'all';
 let groupMode = 'none';
+let useCloud = false;
 
-tasks.forEach(t => { if (!t.createdAt) t.createdAt = t.id; });
-save();
+function save() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    if (useCloud) syncToCloud();
+}
 
-function save() { localStorage.setItem('tasks', JSON.stringify(tasks)); }
+async function syncToCloud() {
+    if (!supabase) return;
+    try {
+        for (const t of tasks) {
+            const row = {
+                text: t.text,
+                done: t.done,
+                priority: t.priority || 'not-urgent-not-important',
+                due_date: t.dueDate || null,
+                created_at: new Date(t.createdAt).toISOString()
+            };
+            if (t.cloudId) {
+                await supabase.from('todos').update(row).eq('id', t.cloudId);
+            } else {
+                const { data, error } = await supabase.from('todos').insert(row).select();
+                if (data && data[0]) t.cloudId = data[0].id;
+            }
+        }
+        // 删除本地已删但云端还存在的
+        const ids = tasks.filter(t => t.cloudId).map(t => t.cloudId);
+        await supabase.from('todos').delete().not('id', 'in', `(${ids.join(',')})`);
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+    } catch (e) {
+        console.warn('Sync failed:', e);
+    }
+}
+
+async function loadFromCloud() {
+    if (!supabase) return false;
+    try {
+        const { data, error } = await supabase.from('todos').select('*').order('created_at', { ascending: false });
+        if (error || !data) return false;
+        tasks = data.map(t => ({
+            id: new Date(t.created_at).getTime(),
+            cloudId: t.id,
+            text: t.text,
+            done: t.done,
+            priority: t.priority || 'not-urgent-not-important',
+            dueDate: t.due_date || null,
+            createdAt: new Date(t.created_at).getTime()
+        }));
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        useCloud = true;
+        return true;
+    } catch (e) {
+        console.warn('Load from cloud failed:', e);
+        return false;
+    }
+}
 
 function spawnConfetti(x, y) {
     const c = document.getElementById('confetti');
@@ -237,21 +293,32 @@ function render() {
     container.innerHTML = html;
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     document.getElementById('taskInput').addEventListener('keydown', e => {
         if (e.key === 'Enter') addTask();
     });
 
-    // 优先级选中高亮（兼容 Qt WebEngine :has() 不生效）
+    // 优先级选中高亮
     document.querySelectorAll('.priority-selector input[type="radio"]').forEach(radio => {
         radio.addEventListener('change', function() {
             document.querySelectorAll('.priority-selector label').forEach(l => l.classList.remove('selected'));
             this.closest('label').classList.add('selected');
         });
     });
-    // 初始化默认选中
     const checked = document.querySelector('.priority-selector input[type="radio"]:checked');
     if (checked) checked.closest('label').classList.add('selected');
 
+    // 先加载本地数据
+    tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    tasks.forEach(t => { if (!t.createdAt) t.createdAt = t.id; });
     render();
+
+    // 尝试加载云端数据
+    const cloudOk = await loadFromCloud();
+    if (cloudOk) {
+        render();
+        console.log('☁️ 已连接 Supabase 云端同步');
+    } else {
+        console.log('📦 使用本地存储');
+    }
 });
