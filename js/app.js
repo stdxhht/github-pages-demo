@@ -9,7 +9,7 @@ const PRIORITY_ORDER = ['urgent-important','not-urgent-important','urgent-not-im
 // Supabase 配置
 const SUPABASE_URL = 'https://uzkxpuynexoxxbrqkxbb.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_0treHlDbTSrWQMhoyYzzYQ_83H-0_Gb';
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 let tasks = [];
 let filter = 'all';
@@ -22,7 +22,7 @@ function save() {
 }
 
 async function syncToCloud() {
-    if (!supabase) return;
+    if (!db) return;
     try {
         for (const t of tasks) {
             const row = {
@@ -33,15 +33,14 @@ async function syncToCloud() {
                 created_at: new Date(t.createdAt).toISOString()
             };
             if (t.cloudId) {
-                await supabase.from('todos').update(row).eq('id', t.cloudId);
+                await db.from('todos').update(row).eq('id', t.cloudId);
             } else {
-                const { data, error } = await supabase.from('todos').insert(row).select();
+                const { data, error } = await db.from('todos').insert(row).select();
                 if (data && data[0]) t.cloudId = data[0].id;
             }
         }
-        // 删除本地已删但云端还存在的
         const ids = tasks.filter(t => t.cloudId).map(t => t.cloudId);
-        await supabase.from('todos').delete().not('id', 'in', `(${ids.join(',')})`);
+        if (ids.length > 0) await db.from('todos').delete().not('id', 'in', `(${ids.join(',')})`);
         localStorage.setItem('tasks', JSON.stringify(tasks));
     } catch (e) {
         console.warn('Sync failed:', e);
@@ -49,9 +48,9 @@ async function syncToCloud() {
 }
 
 async function loadFromCloud() {
-    if (!supabase) return false;
+    if (!db) return false;
     try {
-        const { data, error } = await supabase.from('todos').select('*').order('created_at', { ascending: false });
+        const { data, error } = await db.from('todos').select('*').order('created_at', { ascending: false });
         if (error || !data) return false;
         tasks = data.map(t => ({
             id: new Date(t.created_at).getTime(),
