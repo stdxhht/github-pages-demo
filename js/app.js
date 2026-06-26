@@ -218,7 +218,13 @@ function render() {
         if (b[0] === todayKey) return 1;
         if (a[0] === '无截止日期') return 1;
         if (b[0] === '无截止日期') return -1;
-        return a[0].localeCompare(b[0]);
+        const nums = s => s.match(/\d+/g)?.map(Number) || [0];
+        const na = nums(a[0]);
+        const nb = nums(b[0]);
+        for (let i = 0; i < Math.min(na.length, nb.length); i++) {
+            if (na[i] !== nb[i]) return na[i] - nb[i];
+        }
+        return na.length - nb.length;
     });
     for (const [key, items] of sorted) {
         html += `<div class="group-header">${formatGroupLabel(key)} <span class="count">${items.length}</span></div>`;
